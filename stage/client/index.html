@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Social Media Design Automation</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="top">
+    <div class="brand">
+        <span class="logo">SM</span>
+        <div><div class="brand-name">Social Media Automation</div><div class="brand-sub" id="docBadge">No document</div></div>
+    </div>
+</header>
+
+<nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="artboards">Artboards</button>
+    <button class="tab-btn" data-tab="automation">Automation</button>
+    <button class="tab-btn" data-tab="export">Export</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+</nav>
+
+<main>
+
+<!-- ============ DASHBOARD ============ -->
+<section class="tab active" id="tab-dashboard">
+    <div class="card">
+        <h3>Current document</h3>
+        <dl class="info" id="docInfo"><dt>Status</dt><dd>Connecting to Illustrator…</dd></dl>
+    </div>
+
+    <div class="card">
+        <h3>Quick actions</h3>
+        <div class="qa-grid">
+            <button class="qa" data-action="create"><b>Create Social Media Artboards</b><span>From selected presets</span></button>
+            <button class="qa" data-action="duplicate"><b>Duplicate Design Across Artboards</b><span>Source → all others</span></button>
+            <button class="qa" data-action="fit"><b>Fit Artwork to Artboard</b><span>Selected artwork</span></button>
+            <button class="qa" data-action="center"><b>Center Artwork</b><span>Selected artwork</span></button>
+            <button class="qa" data-action="variations"><b>Generate Platform Variations</b><span>Create + place in one step</span></button>
+            <button class="qa" data-action="exportall"><b>Export All Designs</b><span>Using Export tab settings</span></button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Recent presets</h3>
+        <div class="chips" id="recentChips"><span class="muted">Presets you create will appear here.</span></div>
+    </div>
+</section>
+
+<!-- ============ ARTBOARDS ============ -->
+<section class="tab" id="tab-artboards">
+    <div class="card">
+        <div class="row between"><h3>Platform presets</h3>
+            <div class="row gap"><button class="link" id="selAll">All</button><button class="link" id="selNone">None</button></div>
+        </div>
+        <div id="presetList"></div>
+        <div class="muted small" id="selSummary"></div>
+    </div>
+
+    <div class="card">
+        <h3>Custom size</h3>
+        <div class="grid3">
+            <label>Name<input type="text" id="customName" placeholder="Banner"></label>
+            <label>Width<input type="number" id="customW" min="1" max="16383" placeholder="1500"></label>
+            <label>Height<input type="number" id="customH" min="1" max="16383" placeholder="500"></label>
+        </div>
+        <button class="btn secondary full" id="customAdd">Add custom preset</button>
+    </div>
+
+    <div class="card">
+        <h3>Creation options</h3>
+        <div class="grid2">
+            <label>Copies per preset<input type="number" id="qty" min="1" max="20" data-s="gen.qty" data-type="int"></label>
+            <label>Gap between artboards (pt)<input type="number" id="gap" min="0" max="2000" data-s="gen.gap" data-type="int"></label>
+        </div>
+        <label>Layout
+            <select data-s="gen.layout">
+                <option value="platform-rows">One row per platform</option>
+                <option value="row">Single row</option>
+            </select>
+        </label>
+        <label>Artboard name template
+            <input type="text" data-s="gen.tpl" placeholder="{key}">
+        </label>
+        <div class="muted small">Tokens: {key} {platform} {preset} {w} {h} {n}. Copies get _{n} automatically.</div>
+        <label class="check"><input type="checkbox" data-s="gen.placeAfter" data-type="bool"> Duplicate design onto new artboards (uses Automation settings)</label>
+        <label class="check"><input type="checkbox" data-s="gen.safeAfter" data-type="bool"> Draw safe zone guides afterwards</label>
+        <div class="row gap">
+            <button class="btn primary grow" id="btnCreate">Create artboards</button>
+            <button class="btn secondary grow" id="btnRename">Auto-rename existing</button>
+        </div>
+    </div>
+</section>
+
+<!-- ============ AUTOMATION ============ -->
+<section class="tab" id="tab-automation">
+    <div class="card">
+        <h3>Source &amp; targets</h3>
+        <label>Source artboard
+            <select id="srcArtboard"></select>
+        </label>
+        <label class="check"><input type="checkbox" data-s="auto.useSelection" data-type="bool"> Use current selection as source (disables background detection)</label>
+        <label>Target artboards
+            <select data-s="auto.target" id="autoTarget">
+                <option value="all">All other artboards</option>
+                <option value="selected">Only the ticked artboards below</option>
+            </select>
+        </label>
+        <div class="artlist" id="autoList"></div>
+    </div>
+
+    <div class="card">
+        <h3>Scaling</h3>
+        <label>Mode
+            <select data-s="auto.mode">
+                <option value="fit">Fit to artboard (contain)</option>
+                <option value="fill">Fill artboard (cover)</option>
+                <option value="original">Keep original size</option>
+            </select>
+        </label>
+        <label>Margin <output id="marginOut"></output>
+            <input type="range" min="0" max="30" step="1" data-s="auto.margin" data-type="int" id="margin">
+        </label>
+        <label class="check"><input type="checkbox" data-s="auto.scaleStrokes" data-type="bool"> Scale stroke widths with artwork</label>
+        <label class="check"><input type="checkbox" data-s="auto.clip" data-type="bool"> Clip design to artboard edges</label>
+    </div>
+
+    <div class="card">
+        <h3>Alignment</h3>
+        <div class="align" id="alignGrid">
+            <button data-x="left" data-y="top"></button><button data-x="center" data-y="top"></button><button data-x="right" data-y="top"></button>
+            <button data-x="left" data-y="middle"></button><button data-x="center" data-y="middle"></button><button data-x="right" data-y="middle"></button>
+            <button data-x="left" data-y="bottom"></button><button data-x="center" data-y="bottom"></button><button data-x="right" data-y="bottom"></button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Background</h3>
+        <label>Background shape
+            <select data-s="auto.bgMode">
+                <option value="extend">Detect &amp; stretch to fill each artboard</option>
+                <option value="scale">Treat as normal artwork</option>
+            </select>
+        </label>
+        <label class="check"><input type="checkbox" data-s="auto.replace" data-type="bool"> Replace previous placements on the same artboard</label>
+        <label class="check"><input type="checkbox" data-s="auto.groupLayers" data-type="bool"> Organise results into one layer per platform</label>
+    </div>
+
+    <div class="card">
+        <h3>Safe zone guides <span class="muted small">(approximate)</span></h3>
+        <label class="check"><input type="checkbox" data-s="auto.safeText" data-type="bool"> Text-safe area</label>
+        <label class="check"><input type="checkbox" data-s="auto.safeOverlays" data-type="bool"> Profile / UI overlay areas</label>
+        <div class="row gap">
+            <button class="btn secondary grow" id="btnSafeDraw">Draw guides</button>
+            <button class="btn secondary grow" id="btnSafeClear">Clear guides</button>
+        </div>
+    </div>
+
+    <button class="btn primary full big" id="btnPlace">Place design on target artboards</button>
+</section>
+
+<!-- ============ EXPORT ============ -->
+<section class="tab" id="tab-export">
+    <div class="card">
+        <h3>Artboards to export</h3>
+        <label>Scope
+            <select data-s="exp.scope" id="expScope">
+                <option value="all">All artboards</option>
+                <option value="selected">Only the ticked artboards</option>
+            </select>
+        </label>
+        <div class="artlist" id="expList"></div>
+    </div>
+
+    <div class="card">
+        <h3>Format</h3>
+        <div class="row gap wrap">
+            <label class="check"><input type="checkbox" data-s="exp.fmt_png" data-type="bool"> PNG</label>
+            <label class="check"><input type="checkbox" data-s="exp.fmt_jpg" data-type="bool"> JPEG</label>
+            <label class="check"><input type="checkbox" data-s="exp.fmt_svg" data-type="bool"> SVG</label>
+            <label class="check"><input type="checkbox" data-s="exp.fmt_pdf" data-type="bool"> PDF</label>
+        </div>
+        <label>Resolution (PNG / JPEG)
+            <select data-s="exp.scale" data-type="int">
+                <option value="100">1× (72 ppi)</option>
+                <option value="200">2× (144 ppi)</option>
+                <option value="300">3× (216 ppi)</option>
+                <option value="400">4× (288 ppi)</option>
+                <option value="50">0.5×</option>
+            </select>
+        </label>
+        <label>JPEG quality <output id="qualOut"></output>
+            <input type="range" min="10" max="100" step="5" data-s="exp.quality" data-type="int" id="quality">
+        </label>
+        <label class="check"><input type="checkbox" data-s="exp.transparent" data-type="bool"> Transparent background (PNG)</label>
+        <div class="muted small">SVG and PDF are vector and ignore resolution. JPEG never supports transparency (white matte).</div>
+    </div>
+
+    <div class="card">
+        <h3>File naming</h3>
+        <label>Convention
+            <select data-s="exp.convention" id="expConv"></select>
+        </label>
+        <label>Custom template
+            <input type="text" data-s="exp.tpl" id="expTpl" placeholder="{doc}_{key}_{w}x{h}">
+        </label>
+        <label class="check"><input type="checkbox" data-s="exp.scaleSuffix" data-type="bool"> Add @2x style suffix when scaled</label>
+        <div class="preview">Preview: <code id="namePreview">—</code></div>
+    </div>
+
+    <div class="card">
+        <h3>Destination</h3>
+        <div class="row gap">
+            <input type="text" class="grow" data-s="exp.folder" id="destFolder" placeholder="Choose a folder…">
+            <button class="btn secondary" id="btnBrowse">Browse</button>
+        </div>
+        <button class="link" id="btnOpenFolder">Open destination folder</button>
+    </div>
+
+    <button class="btn primary full big" id="btnExport">Batch export</button>
+    <div class="progress" id="progWrap" hidden><div class="bar" id="progBar"></div></div>
+    <div class="muted small" id="progText"></div>
+    <ul class="log" id="exportLog"></ul>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section class="tab" id="tab-settings">
+    <div class="card">
+        <h3>Export defaults</h3>
+        <label>Default export format
+            <select data-s="defaults.fmt" data-default="1">
+                <option value="png">PNG</option><option value="jpg">JPEG</option>
+                <option value="svg">SVG</option><option value="pdf">PDF</option>
+            </select>
+        </label>
+        <label>Default naming convention
+            <select data-s="defaults.convention" id="defConv" data-default="1"></select>
+        </label>
+        <label>Default resolution
+            <select data-s="defaults.scale" data-type="int" data-default="1">
+                <option value="100">1×</option><option value="200">2×</option>
+                <option value="300">3×</option><option value="400">4×</option>
+            </select>
+        </label>
+        <label>Default folder
+            <input type="text" data-s="defaults.folder" data-default="1" placeholder="Optional">
+        </label>
+        <div class="muted small">Changing a default also updates the Export tab right away.</div>
+    </div>
+
+    <div class="card">
+        <h3>Custom presets</h3>
+        <div id="customList"></div>
+        <div class="muted small">Add new ones on the Artboards tab.</div>
+    </div>
+
+    <div class="card">
+        <h3>Reset</h3>
+        <button class="btn danger full" id="btnReset">Restore all panel settings</button>
+    </div>
+    <div class="muted small center" id="versionLine"></div>
+</section>
+
+</main>
+
+<div id="toast" role="status"></div>
+
+<script src="js/csi-lite.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/naming.js"></script>
+<script src="js/presets.js"></script>
+<script src="js/bridge.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
